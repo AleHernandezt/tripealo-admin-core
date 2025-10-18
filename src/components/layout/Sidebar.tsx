@@ -1,18 +1,31 @@
-import { Home, Building2, Users, Sun, Moon } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { Home, Building2, Users, Sun, Moon, Package, Plane, LogOut } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
-  { title: "Dashboard", path: "/", icon: Home },
-  { title: "Agencias", path: "/agencias", icon: Building2 },
-  { title: "Usuarios", path: "/usuarios", icon: Users },
+  { title: "Dashboard", path: "/", icon: Home, roles: ['admin', 'agencia'] },
+  { title: "Agencias", path: "/agencias", icon: Building2, roles: ['admin'] },
+  { title: "Usuarios", path: "/usuarios", icon: Users, roles: ['admin'] },
+  { title: "Experiencias", path: "/experiencias", icon: Package, roles: ['agencia'] },
+  { title: "Viajes", path: "/viajes", icon: Plane, roles: ['agencia'] },
 ];
 
 export const Sidebar = () => {
   const { theme, setTheme } = useTheme();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const filteredNavItems = navItems.filter(item => 
+    item.roles.includes(user?.role || 'admin')
+  );
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
   
   return (
     <aside className="fixed left-0 top-0 h-screen w-[260px] bg-card border-r border-border flex flex-col">
@@ -24,7 +37,7 @@ export const Sidebar = () => {
       
       <nav className="flex-1 p-4">
         <ul className="space-y-2">
-          {navItems.map((item) => {
+          {filteredNavItems.map((item) => {
             const Icon = item.icon;
             return (
               <li key={item.path}>
@@ -50,20 +63,29 @@ export const Sidebar = () => {
         </ul>
       </nav>
 
-      <div className="p-4 border-t border-border">
-        <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg bg-secondary/30">
-          <div className="flex items-center gap-2">
-            <Moon className="h-4 w-4 text-muted-foreground" />
-            <Label htmlFor="theme-switch" className="text-sm font-medium cursor-pointer">
-              Modo Oscuro
-            </Label>
-          </div>
-          <Switch
-            id="theme-switch"
-            checked={theme === "dark"}
-            onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
-          />
+      <div className="p-4 border-t border-border space-y-3">
+        <div className="flex items-center justify-center">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="rounded-full h-10 w-10"
+          >
+            {theme === "dark" ? (
+              <Moon className="h-5 w-5" />
+            ) : (
+              <Sun className="h-5 w-5" />
+            )}
+          </Button>
         </div>
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={handleLogout}
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          Cerrar Sesión
+        </Button>
       </div>
     </aside>
   );
