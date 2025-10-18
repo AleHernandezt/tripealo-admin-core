@@ -1,19 +1,12 @@
 import { Badge } from "@/components/ui/badge";
+export const StatusBadge = ({ status }: { status: "activo" | "inactivo" }) => {
+  const variants = {
+    activo: "bg-green-100 text-green-800 border-green-200",
+    inactivo: "bg-red-100 text-red-800 border-red-200",
+  };
 
-interface StatusBadgeProps {
-  status: "activo" | "inactivo";
-}
-
-export const StatusBadge = ({ status }: StatusBadgeProps) => {
   return (
-    <Badge
-      variant={status === "activo" ? "default" : "secondary"}
-      className={
-        status === "activo"
-          ? "bg-green-500/10 text-green-500 hover:bg-green-500/20 border-green-500/20"
-          : "bg-muted text-muted-foreground hover:bg-muted"
-      }
-    >
+    <Badge className={variants[status]}>
       {status === "activo" ? "Activo" : "Inactivo"}
     </Badge>
   );

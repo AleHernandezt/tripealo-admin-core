@@ -19,7 +19,7 @@ export const LocationAccordion = ({ estados }: LocationAccordionProps) => {
         variant="ghost"
         size="sm"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="h-auto p-1 text-sm font-normal hover:bg-secondary/50"
+        className="h-auto p-1 text-sm font-normal hover:bg-secondary/100 hover:text-white"
       >
         {isExpanded ? (
           <>
@@ -28,8 +28,7 @@ export const LocationAccordion = ({ estados }: LocationAccordionProps) => {
           </>
         ) : (
           <>
-            <ChevronDown className="h-3 w-3 mr-1" />
-            +{estados.length} estados
+            <ChevronDown className="h-3 w-3 mr-1" />+{estados.length} estados
           </>
         )}
       </Button>

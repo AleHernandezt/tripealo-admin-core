@@ -1,40 +1,23 @@
 import { Badge } from "@/components/ui/badge";
 
-interface TypeBadgeProps {
-  tipo: "standard" | "pro" | "pendiente";
-  onClick?: () => void;
-}
-
-export const TypeBadge = ({ tipo, onClick }: TypeBadgeProps) => {
-  const getBadgeStyles = () => {
-    switch (tipo) {
-      case "standard":
-        return "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border-blue-500/20";
-      case "pro":
-        return "bg-purple-500/10 text-purple-500 hover:bg-purple-500/20 border-purple-500/20";
-      case "pendiente":
-        return "bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20 border-yellow-500/20 cursor-pointer";
-    }
+export const TypeBadge = ({
+  tipo,
+  onClick,
+}: {
+  tipo: "standard" | "pending" | "featured";
+  onClick: () => void;
+}) => {
+  const variants = {
+    standard: "bg-gray-100 text-gray-800 border-gray-200",
+    pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
+    featured: "bg-blue-100 text-blue-800 border-blue-200",
   };
 
-  const getLabel = () => {
-    switch (tipo) {
-      case "standard":
-        return "Standard";
-      case "pro":
-        return "Pro";
-      case "pendiente":
-        return "Pendiente";
-    }
+  const texts = {
+    standard: "Standard",
+    pending: "Pending",
+    featured: "Featured",
   };
 
-  return (
-    <Badge
-      variant="secondary"
-      className={getBadgeStyles()}
-      onClick={tipo === "pendiente" ? onClick : undefined}
-    >
-      {getLabel()}
-    </Badge>
-  );
+  return <Badge className={variants[tipo]}>{texts[tipo]}</Badge>;
 };

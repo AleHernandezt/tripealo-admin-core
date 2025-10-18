@@ -13,6 +13,9 @@ import Experiencias from "./pages/Experiencias";
 import Viajes from "./pages/Viajes";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import FormAgencies from "./pages/auth/Agency-Form";
+import Guides from "./pages/Guides";
+import Categories from "./pages/Categories";
 
 const queryClient = new QueryClient();
 
@@ -26,11 +29,70 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/login" element={<Login />} />
-              <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-              <Route path="/agencias" element={<ProtectedRoute allowedRoles={['admin']}><Agencias /></ProtectedRoute>} />
-              <Route path="/usuarios" element={<ProtectedRoute allowedRoles={['admin']}><Usuarios /></ProtectedRoute>} />
-              <Route path="/experiencias" element={<ProtectedRoute allowedRoles={['agencia']}><Experiencias /></ProtectedRoute>} />
-              <Route path="/viajes" element={<ProtectedRoute allowedRoles={['agencia']}><Viajes /></ProtectedRoute>} />
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <Index />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/guides"
+                element={
+                  <ProtectedRoute allowedRoles={["agencia"]}>
+                    <Guides />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/experiencias"
+                element={
+                  <ProtectedRoute allowedRoles={["agencia"]}>
+                    <Experiencias />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/viajes"
+                element={
+                  <ProtectedRoute allowedRoles={["agencia"]}>
+                    <Viajes />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/agencias"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <Agencias />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/usuarios"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <Usuarios />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/agencia-form"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <FormAgencies />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/categorias"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <Categories />
+                  </ProtectedRoute>
+                }
+              />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

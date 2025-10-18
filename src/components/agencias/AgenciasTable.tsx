@@ -19,7 +19,10 @@ interface AgenciasTableProps {
 
 const ITEMS_PER_PAGE = 10;
 
-export const AgenciasTable = ({ agencies, onApproveClick }: AgenciasTableProps) => {
+export const AgenciasTable = ({
+  agencies,
+  onApproveClick,
+}: AgenciasTableProps) => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = Math.ceil(agencies.length / ITEMS_PER_PAGE);
@@ -34,18 +37,22 @@ export const AgenciasTable = ({ agencies, onApproveClick }: AgenciasTableProps) 
           <TableHeader>
             <TableRow className="bg-card hover:bg-card">
               <TableHead className="font-semibold">Nombre</TableHead>
-              <TableHead className="font-semibold">Email</TableHead>
+              <TableHead className="font-semibold">Contacto</TableHead>
               <TableHead className="font-semibold">Lugar donde opera</TableHead>
-              <TableHead className="font-semibold">Media de viajes/mes</TableHead>
+              <TableHead className="font-semibold">
+                Media de viajes/mes
+              </TableHead>
               <TableHead className="font-semibold">Status</TableHead>
               <TableHead className="font-semibold">Tipo</TableHead>
-              <TableHead className="font-semibold text-right">Acciones</TableHead>
+              <TableHead className="font-semibold text-right">
+                Acciones
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {currentAgencies.map((agency) => (
-              <AgencyRow 
-                key={agency.id} 
+              <AgencyRow
+                key={agency.id}
                 agency={agency}
                 onApproveClick={onApproveClick}
               />
@@ -56,7 +63,8 @@ export const AgenciasTable = ({ agencies, onApproveClick }: AgenciasTableProps) 
 
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          Mostrando {startIndex + 1}-{Math.min(endIndex, agencies.length)} de {agencies.length}
+          Mostrando {startIndex + 1}-{Math.min(endIndex, agencies.length)} de{" "}
+          {agencies.length}
         </p>
         <div className="flex gap-2">
           <Button
@@ -71,7 +79,9 @@ export const AgenciasTable = ({ agencies, onApproveClick }: AgenciasTableProps) 
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+            }
             disabled={currentPage === totalPages}
           >
             Siguiente
