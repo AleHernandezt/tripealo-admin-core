@@ -9,6 +9,7 @@ import {
   LogOut,
   Hand,
   ChartBar,
+  DollarSign,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -59,9 +60,7 @@ export const Sidebar = () => {
   return (
     <aside className="fixed left-0 top-0 h-screen w-[260px] bg-card border-r border-border flex flex-col">
       <div className="p-6 border-b border-border">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-          Tripealo
-        </h1>
+        <img src="/logoHorizontalAzul.png" alt="logo" />
       </div>
 
       <nav className="flex-1 p-4">

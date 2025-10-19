@@ -24,6 +24,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/lib/supabase";
+import { Link } from "react-router-dom";
 
 interface Trip {
   id: string;
@@ -386,80 +387,84 @@ const Viajes = () => {
 
         <div className="grid grid-cols-1 gap-6">
           {trips.map((trip) => (
-            <Card key={trip.id}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-xl">
-                      {getExperienceName(trip.experience)}
-                    </CardTitle>
-                    <div className="flex flex-wrap gap-4 mt-2 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
-                        Inicio: {new Date(trip.start_date).toLocaleString()}
-                      </div>
-                      {trip.end_date && (
+            <Link to={`/viajes/${trip.id}`} key={trip.id}>
+              <Card>
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <CardTitle className="text-xl">
+                        {getExperienceName(trip.experience)}
+                      </CardTitle>
+                      <div className="flex flex-wrap gap-4 mt-2 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          Fin: {new Date(trip.end_date).toLocaleString()}
+                          Inicio: {new Date(trip.start_date).toLocaleString()}
                         </div>
+                        {trip.end_date && (
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            Fin: {new Date(trip.end_date).toLocaleString()}
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1">
+                          👤 {getGuideName(trip.guide)}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      {trip.is_featured && (
+                        <Badge
+                          variant="default"
+                          className="bg-gradient-to-r from-purple-500 to-pink-500"
+                        >
+                          Destacado
+                        </Badge>
                       )}
-                      <div className="flex items-center gap-1">
-                        👤 {getGuideName(trip.guide)}
-                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteTrip(trip.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    {trip.is_featured && (
-                      <Badge
-                        variant="default"
-                        className="bg-gradient-to-r from-purple-500 to-pink-500"
-                      >
-                        Destacado
-                      </Badge>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {trip.price && (
+                      <div className="space-y-1">
+                        <Label className="text-sm font-medium">Precio</Label>
+                        <Badge
+                          variant="secondary"
+                          className="text-lg font-semibold"
+                        >
+                          ${trip.price.toLocaleString()}
+                        </Badge>
+                      </div>
                     )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteTrip(trip.id)}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {trip.price && (
-                    <div className="space-y-1">
-                      <Label className="text-sm font-medium">Precio</Label>
-                      <Badge
-                        variant="secondary"
-                        className="text-lg font-semibold"
-                      >
-                        ${trip.price.toLocaleString()}
-                      </Badge>
-                    </div>
-                  )}
-                  {trip.seats_available !== null && (
-                    <div className="space-y-1">
-                      <Label className="text-sm font-medium">Asientos</Label>
-                      <div className="text-lg font-semibold">
-                        {trip.seats_available} disponibles
+                    {trip.seats_available !== null && (
+                      <div className="space-y-1">
+                        <Label className="text-sm font-medium">Asientos</Label>
+                        <div className="text-lg font-semibold">
+                          {trip.seats_available} disponibles
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  {trip.experience?.description && (
-                    <div className="space-y-1">
-                      <Label className="text-sm font-medium">Descripción</Label>
-                      <p className="text-sm text-muted-foreground">
-                        {trip.experience.description}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                    )}
+                    {trip.experience?.description && (
+                      <div className="space-y-1">
+                        <Label className="text-sm font-medium">
+                          Descripción
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          {trip.experience.description}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
 

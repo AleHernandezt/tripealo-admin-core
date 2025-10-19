@@ -1,3 +1,4 @@
+import NotificationsContainer from "./Notifications";
 import { Sidebar } from "./Sidebar";
 
 interface MainLayoutProps {
@@ -9,7 +10,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     <div className="flex min-h-screen w-full bg-background">
       <Sidebar />
       <main className="flex-1 ml-[260px] p-8 overflow-x-auto">
-        {children}
+        <div>{children}</div>
       </main>
     </div>
   );

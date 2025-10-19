@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import FormAgencies from "./pages/auth/Agency-Form";
 import Guides from "./pages/Guides";
 import Categories from "./pages/Categories";
+import ViajeDetails from "./pages/ViajeDetails";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +63,14 @@ const App = () => (
                 }
               />
               <Route
+                path="/viajes/:id"
+                element={
+                  <ProtectedRoute allowedRoles={["agencia"]}>
+                    <ViajeDetails />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/agencias"
                 element={
                   <ProtectedRoute allowedRoles={["admin"]}>
@@ -89,6 +98,22 @@ const App = () => (
                 path="/categorias"
                 element={
                   <ProtectedRoute allowedRoles={["admin"]}>
+                    <Categories />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/facturacion"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <Categories />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/facturacion-agencias"
+                element={
+                  <ProtectedRoute allowedRoles={["agencia"]}>
                     <Categories />
                   </ProtectedRoute>
                 }

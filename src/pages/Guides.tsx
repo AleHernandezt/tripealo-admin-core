@@ -21,8 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Guide {
   id: string;
@@ -32,7 +32,6 @@ interface Guide {
   vat?: string;
   email?: string;
   status?: "available" | "on_trip" | "unavailable";
-  password?: string;
   created_at?: string;
 }
 
@@ -51,8 +50,7 @@ const Guides = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
-
-  // Configuración de React Hook Form
+  const { user } = useAuth();
   const {
     register,
     handleSubmit,
@@ -75,7 +73,7 @@ const Guides = () => {
   const fetchGuides = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("guides")
         .select("*")
         .order("created_at", { ascending: false });
@@ -96,37 +94,123 @@ const Guides = () => {
     fetchGuides();
   }, []);
 
-  // Crear nueva guía
+  // Crear nueva guía con autenticación
   const onCreateGuide = async (data: GuideFormData) => {
     try {
       setCreating(true);
 
+      // 1. Registrar usuario en Auth de Supabase
+      const { data: authData, error: authError } =
+        await supabaseAdmin.auth.signUp({
+          email: data.email,
+          password: data.password,
+          options: {
+            data: {
+              first_name: data.first_name,
+              last_name: data.last_name,
+              user_type: "guide",
+            },
+          },
+        });
+
+      if (authError) {
+        throw new Error(`Error en autenticación: ${authError.message}`);
+      }
+
+      if (!authData.user) {
+        throw new Error("No se pudo crear el usuario");
+      }
+
       const nuevaGuide = {
+        id: authData.user.id,
         first_name: data.first_name,
         last_name: data.last_name || null,
         vat: data.vat || null,
-        email: data.email || null,
-        password: data.password || null,
+        email: data.email,
         status: data.status,
-        agency_id: "5234281c-76a9-418d-bd49-c85715c6d7e1", // Ajusta según tu lógica de agency_id
+        agency_id: user?.agencyId,
       };
 
-      const { data: result, error } = await supabase
+      const { data: guideData, error: guideError } = await supabaseAdmin
         .from("guides")
         .insert([nuevaGuide])
         .select();
 
-      if (error) {
-        throw error;
+      if (guideError) {
+        // Si falla la inserción en guides, eliminamos el usuario de auth
+        await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+        throw guideError;
       }
 
-      if (result) {
-        setGuides((prev) => [result[0], ...prev]);
+      if (guideData) {
+        setGuides((prev) => [guideData[0], ...prev]);
         reset();
         setIsDialogOpen(false);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating guide:", error);
+      alert(`Error al crear guía: ${error.message}`);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  // Función alternativa si prefieres crear el usuario sin confirmación de email
+  const onCreateGuideWithoutEmailConfirmation = async (data: GuideFormData) => {
+    try {
+      setCreating(true);
+
+      // 1. Crear usuario directamente con la API de administración
+      // NOTA: Esto requiere permisos de servicio role o usar una Edge Function
+      const { data: authData, error: authError } =
+        await supabaseAdmin.auth.admin.createUser({
+          email: data.email,
+          password: data.password,
+          email_confirm: true, // Confirmar email automáticamente
+          user_metadata: {
+            first_name: data.first_name,
+            last_name: data.last_name,
+            user_type: "guide",
+          },
+        });
+
+      if (authError) {
+        throw new Error(`Error en autenticación: ${authError.message}`);
+      }
+
+      if (!authData.user) {
+        throw new Error("No se pudo crear el usuario");
+      }
+
+      // 2. Crear registro en la tabla guides
+      const nuevaGuide = {
+        id: authData.user.id,
+        first_name: data.first_name,
+        last_name: data.last_name || null,
+        vat: data.vat || null,
+        email: data.email,
+        status: data.status,
+        agency_id: user?.agencyId,
+      };
+
+      const { data: guideData, error: guideError } = await supabaseAdmin
+        .from("guides")
+        .insert([nuevaGuide])
+        .select();
+
+      if (guideError) {
+        await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+        throw guideError;
+      }
+
+      if (guideData) {
+        setGuides((prev) => [guideData[0], ...prev]);
+        reset();
+        setIsDialogOpen(false);
+      }
+    } catch (error: any) {
+      console.error("Error creating guide:", error);
+      alert(`Error al crear guía: ${error.message}`);
     } finally {
       setCreating(false);
     }
@@ -138,7 +222,7 @@ const Guides = () => {
     newStatus: "available" | "on_trip" | "unavailable"
   ) => {
     try {
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from("guides")
         .update({
           status: newStatus,
@@ -156,6 +240,39 @@ const Guides = () => {
       );
     } catch (error) {
       console.error("Error updating guide status:", error);
+    }
+  };
+
+  // Eliminar guía (incluyendo usuario de auth)
+  const deleteGuide = async (id: string, email: string) => {
+    if (!confirm("¿Estás seguro de que quieres eliminar este guía?")) {
+      return;
+    }
+
+    try {
+      // 1. Eliminar de la tabla guides
+      const { error: guideError } = await supabaseAdmin
+        .from("guides")
+        .delete()
+        .eq("id", id);
+
+      if (guideError) {
+        throw guideError;
+      }
+
+      // 2. Eliminar usuario de auth (requiere permisos de administrador)
+      const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(
+        id
+      );
+
+      if (authError) {
+        console.warn("Usuario eliminado de guides pero no de auth:", authError);
+      }
+
+      setGuides((prev) => prev.filter((guide) => guide.id !== id));
+    } catch (error) {
+      console.error("Error deleting guide:", error);
+      alert("Error al eliminar el guía");
     }
   };
 
@@ -231,7 +348,7 @@ const Guides = () => {
                 <DialogTitle>Crear Nuevo Guía</DialogTitle>
               </DialogHeader>
               <form
-                onSubmit={handleSubmit(onCreateGuide)}
+                onSubmit={handleSubmit(onCreateGuideWithoutEmailConfirmation)}
                 className="space-y-4 py-4"
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -272,11 +389,12 @@ const Guides = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">Email *</Label>
                     <Input
                       id="email"
                       type="email"
                       {...register("email", {
+                        required: "El email es requerido",
                         pattern: {
                           value: /^\S+@\S+$/i,
                           message: "Email inválido",
@@ -293,13 +411,25 @@ const Guides = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Contraseña</Label>
+                  <Label htmlFor="password">Contraseña *</Label>
                   <Input
                     id="password"
                     type="password"
-                    {...register("password")}
+                    {...register("password", {
+                      required: "La contraseña es requerida",
+                      minLength: {
+                        value: 6,
+                        message:
+                          "La contraseña debe tener al menos 6 caracteres",
+                      },
+                    })}
                     placeholder="Contraseña temporal"
                   />
+                  {errors.password && (
+                    <p className="text-sm text-red-500">
+                      {errors.password.message}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -402,6 +532,15 @@ const Guides = () => {
                     Registrado:{" "}
                     {new Date(guide.created_at || "").toLocaleDateString()}
                   </div>
+
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => deleteGuide(guide.id, guide.email || "")}
+                    className="w-full mt-2"
+                  >
+                    Eliminar Guía
+                  </Button>
                 </CardContent>
               </Card>
             ))}
